@@ -1,21 +1,23 @@
-<div id="<%= dom_id(card, :release) %>" class="card__release" data-controller="dialog"
-    data-action="keydown.esc->dialog#close click@document->dialog#closeOnClickOutside mouseenter->dialog#loadLazyFrames">
-  <button class="<%= class_names("card__release-button btn btn--ensure-tap-target-size", "card__release-button--blank": card.release.blank?) %>"
-      title="<%= card.release.presence || "Set the release" %>"
-      data-action="click->dialog#open:stop" data-controller="tooltip">
-    <%= icon_tag "marker", class: "card__release-icon" %>
-    <% if card.release.present? %>
-      <span class="card__release-label">Release</span>
-      <span class="card__release-name overflow-ellipsis"><%= card.release %></span>
-      <span class="for-screen-reader">Change the release</span>
-    <% else %>
-      <span class="for-screen-reader">Set the release</span>
-    <% end %>
-  </button>
+<% dialog_data = { controller: "dialog", action: "keydown.esc->dialog#close click@document->dialog#closeOnClickOutside mouseenter->dialog#loadLazyFrames" } unless card.closed? %>
 
-  <dialog class="card__release-picker popup panel flex-column align-start justify-start fill-white shadow txt-small"
-      data-dialog-target="dialog"
-      data-action="turbo:before-morph-attribute->dialog#preventCloseOnMorphing turbo:submit-end->dialog#close">
-    <%= turbo_frame_tag card, :release_picker, src: edit_card_release_path(card), loading: :lazy, refresh: :morph %>
-  </dialog>
-</div>
+<%= tag.div id: dom_id(card, :release), class: "card__release", data: dialog_data,
+      hidden: card.closed? && card.release.blank? do %>
+  <% if card.closed? %>
+    <% if card.release.present? %>
+      <span class="card__release-name overflow-ellipsis" title="<%= card.release %>"><%= card.release %></span>
+    <% end %>
+  <% else %>
+    <button class="<%= class_names("card__release-button btn btn--plain btn--ensure-tap-target-size", "card__release-button--blank": card.release.blank?) %>"
+        title="<%= card.release.presence || "Set the release" %>"
+        data-action="click->dialog#open:stop" data-controller="tooltip">
+      <span class="overflow-ellipsis"><%= card.release.presence || "Release" %></span>
+      <span class="for-screen-reader"><%= card.release.present? ? "Change the release" : "Set the release" %></span>
+    </button>
+
+    <dialog class="popup popup--align-left panel flex-column align-start justify-start fill-white shadow txt-small"
+        data-dialog-target="dialog"
+        data-action="turbo:before-morph-attribute->dialog#preventCloseOnMorphing turbo:submit-end->dialog#close">
+      <%= turbo_frame_tag card, :release_picker, src: edit_card_release_path(card), loading: :lazy, refresh: :morph %>
+    </dialog>
+  <% end %>
+<% end %>

@@ -1,0 +1,52 @@
+# Runs Dayzy on the Ruby pinned in .ruby-version instead of whatever the host
+# has, for both the test suite and a local dev server.
+#
+#   HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose build   # writes come back yours
+#   docker compose run --rm test                     # whole OSS/SQLite suite
+#   docker compose run --rm test bin/rails test test/controllers/cards_controller_test.rb
+#   docker compose up dev                            # http://localhost:3006
+#
+# HOST_UID/HOST_GID, not UID/GID: bash makes UID readonly, so `UID=$(id -u) ...`
+# fails there. They default to 1000 when unset.
+#
+# Only the OSS/SQLite leg of .github/workflows/test.yml. System tests are out of
+# scope — they need a browser this image doesn't carry.
+#
+# db:test:prepare, not CI's db:setup: the source tree is bind-mounted, so
+# storage/test.sqlite3 usually already exists and db:setup fails loading the
+# schema over it ("table search_records_fts already exists").
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile.test
+    args:
+      UID: ${HOST_UID:-1000}
+      GID: ${HOST_GID:-1000}
+  image: dayzy-app
+  volumes:
+    - .:/rails
+  # Outside the bind mount: a host .bundle/config outranks BUNDLE_PATH and would
+  # point Bundler at the host's gems.
+  environment: &app_env
+    BUNDLE_APP_CONFIG: /usr/local/bundle
+
+services:
+  test:
+    <<: *app
+    environment:
+      <<: *app_env
+      DATABASE_ADAPTER: sqlite
+      RAILS_ENV: test
+      SAAS: "false"
+    command: bin/rails db:test:prepare test
+
+  dev:
+    <<: *app
+    environment:
+      <<: *app_env
+      DATABASE_ADAPTER: sqlite
+      RAILS_ENV: development
+      SAAS: "false"
+    ports:
+      - "3006:3006"
+    command: bash -c "bin/rails db:prepare && bin/rails server -b 0.0.0.0 -p 3006"
