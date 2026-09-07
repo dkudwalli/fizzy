@@ -94,7 +94,7 @@ Rails.application.routes.draw do
       resource :points, only: [ :edit, :update ]
       resource :publish
       resource :reading
-      resource :release, only: [ :edit, :update ]
+      resource :release, only: [ :edit, :update, :destroy ]
       resource :triage
       resource :watch
       resource :reading

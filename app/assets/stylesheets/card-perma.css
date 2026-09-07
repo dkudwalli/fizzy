@@ -269,10 +269,10 @@
        * meta element, and the reactions can sit below */
       &:has(.reaction) {
         display: grid;
-        grid-template-columns: 1fr auto auto;
+        grid-template-columns: 1fr auto;
         grid-template-areas:
-          "meta release bg-zoom"
-          "reactions reactions reactions";
+          "meta bg-zoom"
+          "reactions reactions";
       }
 
       @media (max-width: 639px) {
@@ -282,7 +282,6 @@
         grid-template-columns: 1fr auto;
         grid-template-areas:
           "meta bg-zoom"
-          "meta release"
           "meta reactions";
 
         &:not(:has(.reaction)),
@@ -336,10 +335,6 @@
 
     .card__zoom-bg-btn {
       grid-area: bg-zoom;
-    }
-
-    .card__release {
-      grid-area: release;
     }
 
     .bubble {

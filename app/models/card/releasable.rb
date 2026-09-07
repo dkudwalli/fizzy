@@ -10,4 +10,8 @@ module Card::Releasable
       where.not(release: nil).distinct.order(:release).pluck(:release)
     end
   end
+
+  def released_in?(name)
+    release == self.class.normalize_value_for(:release, name)
+  end
 end

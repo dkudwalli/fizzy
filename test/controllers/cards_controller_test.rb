@@ -10,6 +10,14 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index shows the release each card belongs to" do
+    cards(:logo).update!(release: "v1.2")
+
+    get cards_path
+
+    assert_select ".card__release-badge", text: "v1.2"
+  end
+
   test "filtered index" do
     get cards_path(filters(:jz_assignments).as_params.merge(term: "haggis"))
     assert_response :success
@@ -80,6 +88,29 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".card__title-link" do |element|
       assert_equal "Fix the <code>bug</code> in production", element.inner_html
     end
+  end
+
+  test "show renders an open card's release as a picker" do
+    cards(:logo).update!(release: "v1.2")
+
+    get card_path(cards(:logo))
+
+    assert_select "##{dom_id(cards(:logo), :release)}[data-controller=?]", "dialog" do
+      assert_select "[data-action*=?]", "dialog#closeOnClickOutside"
+      assert_select "button.card__release-button", text: /v1\.2/
+      assert_select "dialog[data-dialog-target=?]", "dialog"
+    end
+  end
+
+  # The dialog and dialog-manager controllers both dereference the <dialog> a
+  # "dialog" controller declares, so a closed card must not claim to be one.
+  test "show renders a closed card's release as plain text, with no dialog controller" do
+    cards(:shipping).update!(release: "v1.2")
+
+    get card_path(cards(:shipping))
+
+    assert_select ".card__release-name", text: "v1.2"
+    assert_select "##{dom_id(cards(:shipping), :release)}[data-controller]", false
   end
 
   test "edit" do

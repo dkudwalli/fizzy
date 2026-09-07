@@ -18,13 +18,19 @@
 
     <ul class="popup__list" data-filter-target="list">
       <% @releases.each do |release| %>
-        <li class="popup__item" data-filter-target="item" data-navigable-list-target="item" aria-checked="<%= @card.release == release %>">
-          <%= button_to card_release_path(@card), method: :patch, params: { card: { release: release } },
+        <% released_in = @card.released_in?(release) %>
+        <%= tag.li class: "popup__item", role: "checkbox", aria: { checked: released_in },
+              data: { filter_target: "item", navigable_list_target: "item" } do %>
+          <%# Re-picking the release a card is already in clears it, the way re-picking a tag untags it. %>
+          <%= button_to card_release_path(@card),
+                method: released_in ? :delete : :patch,
+                params: released_in ? {} : { card: { release: release } },
                 class: "popup__btn btn", form_class: "max-width flex-item-grow" do %>
             <span class="overflow-ellipsis flex-item-grow"><%= release %></span>
+            <span class="for-screen-reader"><%= released_in ? "Clear this release" : "Set this release" %></span>
             <%= icon_tag "check", class: "checked flex-item-no-shrink flex-item-justify-end", style: "--icon-size: 1em" %>
           <% end %>
-        </li>
+        <% end %>
       <% end %>
 
       <li class="popup__item" data-navigable-list-target="item">
@@ -33,16 +39,6 @@
           <span>Add release</span>
         <% end %>
       </li>
-
-      <% if @card.release.present? %>
-        <li class="popup__item" data-navigable-list-target="item">
-          <%= button_to card_release_path(@card), method: :patch, params: { card: { release: "" } },
-                class: "popup__btn btn", form_class: "max-width flex-item-grow" do %>
-            <%= icon_tag "remove" %>
-            <span class="overflow-ellipsis flex-item-grow">Clear release</span>
-          <% end %>
-        </li>
-      <% end %>
     </ul>
   </div>
 <% end %>
