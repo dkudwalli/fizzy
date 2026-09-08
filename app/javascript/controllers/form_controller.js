@@ -67,7 +67,7 @@ export default class extends Controller {
   }
 
   cancel() {
-    this.cancelTarget?.click()
+    if (this.hasCancelTarget) this.cancelTarget.click()
   }
 
   preventAttachment(event) {
@@ -77,10 +77,8 @@ export default class extends Controller {
   async disableSubmitWhenInvalid(event) {
     await nextFrame()
 
-    if (this.element.checkValidity()) {
-      this.submitTarget.removeAttribute("disabled")
-    } else {
-      this.submitTarget.toggleAttribute("disabled", true)
+    if (this.hasSubmitTarget) {
+      this.submitTarget.toggleAttribute("disabled", !this.element.checkValidity())
     }
   }
 
