@@ -1,9 +1,9 @@
 # Pin npm packages by running ./bin/importmap
 
-pin "xlsx" # @0.18.5
+pin "xlsx", preload: false # @0.18.5 — 443KB, dynamically imported by reports_controller only
 pin "application"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
-pin "@hotwired/turbo/offline", to: "turbo-offline.min.js"
+pin "@hotwired/turbo/offline", to: "turbo-offline.min.js", preload: false # service-worker side only; the page never imports it
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin "@hotwired/hotwire-native-bridge", to: "@hotwired--hotwire-native-bridge.js"
@@ -17,5 +17,5 @@ pin_all_from "app/javascript/bridge/initializers", under: "bridge/initializers"
 pin_all_from "app/javascript/bridge/helpers", under: "bridge/helpers"
 pin_all_from "app/javascript/bridge/controllers/bridge", under: "controllers/bridge", to: "bridge/controllers/bridge"
 pin "lexxy"
-pin "@rails/activestorage", to: "activestorage.esm.js"
+pin "@rails/activestorage", to: "activestorage.esm.js", preload: false # lexxy imports it dynamically, only when attaching a file
 pin "@rails/actiontext", to: "actiontext.esm.js"
